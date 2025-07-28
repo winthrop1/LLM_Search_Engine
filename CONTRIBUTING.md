@@ -7,7 +7,7 @@ Thank you for your interest in contributing to this project! This guide will hel
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/yourusername/semantic_llm.git
+   git clone https://github.com/winthrop1/LLM_Search_Engine.git
    cd semantic_llm
    ```
 3. **Create a virtual environment**:
