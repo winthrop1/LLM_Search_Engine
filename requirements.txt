@@ -1,0 +1,31 @@
+# Core dependencies
+PyPDF2
+requests
+python-dotenv
+sentence-transformers
+langchain-community
+langchain-huggingface
+langchain-core
+langchain-text-splitters
+faiss-cpu
+numpy
+
+# Multi-format document support
+unstructured[all-docs]
+python-docx
+openpyxl
+python-pptx
+
+# OCR support
+pytesseract
+Pillow
+pymupdf
+
+# LLM Provider Support
+openai>=1.0.0
+anthropic>=0.18.0
+google-generativeai>=0.3.0
+
+# Additional utilities
+pathlib2
+asyncio
