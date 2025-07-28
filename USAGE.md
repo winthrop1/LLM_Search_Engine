@@ -309,7 +309,7 @@ preprocessor.normalize_whitespace = True
 ### Common Issues
 
 1. **No documents found**
-   - Check `DATA_FOLDER` path in `.env`
+   - Check `data/` path in `.env`
    - Ensure supported file formats are present
    - Verify file permissions
 
@@ -360,7 +360,7 @@ git add .
 git commit -m "Initial commit: Enhanced Semantic Document Search Engine"
 
 # Add remote repository
-git remote add origin https://github.com/yourusername/semantic_llm.git
+git remote add origin https://github.com/winthrop1/LLM_Search_Engine.git
 git push -u origin main
 ```
 
@@ -370,26 +370,6 @@ For CI/CD pipelines, set these secrets in your GitHub repository:
 - `ANTHROPIC_API_KEY` 
 - `GOOGLE_API_KEY`
 - `XAI_API_KEY`
-
-### Docker Support (Optional)
-```dockerfile
-# Example Dockerfile for containerization
-FROM python:3.9-slim
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-EXPOSE 8000
-
-CMD ["python", "main.py"]
-```
 
 ## API Reference
 
