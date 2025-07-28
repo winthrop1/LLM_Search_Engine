@@ -1,13 +1,20 @@
 """
 Document ingestion module for multi-format document support.
-Supports PDF, DOCX, TXT, MD, HTML, PPTX, and XLSX files.
+Supports PDF, DOCX, TXT, MD, HTML, PPTX, XLSX, and image files.
+Image formats (JPG, PNG, GIF, BMP, TIFF) are processed using OCR.
 """
 
 import os
 import glob
 import hashlib
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pathlib import Path
+
+try:
+    from PIL import Image
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
 
 from langchain_community.document_loaders import (
     PyPDFLoader,
@@ -21,6 +28,64 @@ from langchain_community.document_loaders import (
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from .ocr import OCRProcessor, HAS_OCR
+
+
+class ImageLoader:
+    """Custom loader for image files using OCR."""
+    
+    def __init__(self, file_path: str, ocr_processor: Optional[OCRProcessor] = None):
+        """
+        Initialize ImageLoader.
+        
+        Args:
+            file_path: Path to image file
+            ocr_processor: OCR processor instance (optional)
+        """
+        self.file_path = file_path
+        self.ocr_processor = ocr_processor or OCRProcessor()
+        
+        if not HAS_OCR or not HAS_PIL:
+            raise ImportError(
+                "Image processing requires OCR and PIL dependencies. "
+                "Install with: pip install pytesseract pillow"
+            )
+    
+    def load(self) -> List[Document]:
+        """
+        Load and process image using OCR.
+        
+        Returns:
+            List containing single Document with OCR-extracted text
+        """
+        try:
+            # Open image
+            image = Image.open(self.file_path)
+            
+            # Extract text using OCR
+            text = self.ocr_processor.extract_text_from_image(image)
+            
+            if not text.strip():
+                print(f"No text found in image: {self.file_path}")
+                return []
+            
+            # Create document
+            document = Document(
+                page_content=text,
+                metadata={
+                    'source': self.file_path,
+                    'extraction_method': 'ocr',
+                    'image_mode': image.mode,
+                    'image_size': image.size
+                }
+            )
+            
+            return [document]
+            
+        except Exception as e:
+            print(f"Error processing image {self.file_path}: {str(e)}")
+            return []
+
 
 class DocumentIngestion:
     """Handles multi-format document ingestion and processing."""
@@ -32,7 +97,15 @@ class DocumentIngestion:
         '.md': UnstructuredMarkdownLoader,
         '.html': UnstructuredHTMLLoader,
         '.pptx': UnstructuredPowerPointLoader,
-        '.xlsx': UnstructuredExcelLoader
+        '.xlsx': UnstructuredExcelLoader,
+        # Image formats (processed via OCR)
+        '.jpg': ImageLoader,
+        '.jpeg': ImageLoader,
+        '.png': ImageLoader,
+        '.gif': ImageLoader,
+        '.bmp': ImageLoader,
+        '.tiff': ImageLoader,
+        '.tif': ImageLoader
     }
     
     def __init__(self, data_dir: str = "./data", processed_dir: str = "./processed"):
@@ -54,6 +127,20 @@ class DocumentIngestion:
             length_function=len,
             separators=["\n\n", "\n", " ", ""]
         )
+        
+        # Initialize OCR processor for image handling
+        self.ocr_processor = None
+        if HAS_OCR:
+            try:
+                self.ocr_processor = OCRProcessor()
+            except Exception as e:
+                print(f"OCR processor initialization failed: {e}")
+                print("Image files will be skipped")
+    
+    def is_image_file(self, file_ext: str) -> bool:
+        """Check if file extension is an image format."""
+        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif'}
+        return file_ext.lower() in image_extensions
     
     def get_file_hash(self, file_path: Path) -> str:
         """Generate SHA-256 hash of file content for change detection."""
@@ -90,7 +177,13 @@ class DocumentIngestion:
         
         try:
             # Handle different loader initialization patterns
-            if file_ext == '.txt':
+            if self.is_image_file(file_ext):
+                # Special handling for image files
+                if not self.ocr_processor:
+                    print(f"Skipping image file {file_path}: OCR not available")
+                    return []
+                loader = loader_class(str(file_path), self.ocr_processor)
+            elif file_ext == '.txt':
                 loader = loader_class(str(file_path), encoding='utf-8')
             else:
                 loader = loader_class(str(file_path))

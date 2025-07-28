@@ -36,6 +36,7 @@ env/
 ENV/
 env.bak/
 venv.bak/
+.conda/
 
 # IDE
 .vscode/
@@ -54,11 +55,19 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
-data/
 index/
-processed/
 *.log
 *.tmp
+
+# Excluded files
+CLAUDE.md
+ROADMAP.md
+
+# Track directories, but not their contents
+data/*
+!data/.gitkeep
+processed/*
+!processed/.gitkeep
 
 # Jupyter Notebook
 .ipynb_checkpoints

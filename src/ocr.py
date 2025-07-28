@@ -5,6 +5,7 @@ Uses Tesseract OCR with PIL for image preprocessing.
 
 import os
 import tempfile
+import io
 from typing import List, Optional
 from pathlib import Path
 
@@ -159,8 +160,7 @@ class OCRProcessor:
                 img_data = pix.tobytes("png")
                 
                 # Convert to PIL Image
-                image = Image.open(tempfile.SpooledTemporaryFile(max_size=10000000))
-                image = Image.open(tempfile.BytesIO(img_data))
+                image = Image.open(io.BytesIO(img_data))
                 
                 # Extract text using OCR
                 text = self.extract_text_from_image(image, lang)
