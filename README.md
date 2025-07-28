@@ -65,6 +65,8 @@ XAI_API_KEY=your_xai_api_key_here
 
 ### 3. Usage
 
+Before running the application, place your documents (PDF, DOCX, TXT, MD, HTML, PPTX, XLSX) into the `data/` directory. The system will automatically detect and process them.
+
 ```bash
 # Run the enhanced search engine
 python main.py
@@ -88,6 +90,26 @@ When running the application, use these commands:
 - `/stream` - Toggle streaming responses on/off
 - `/conv` - Show conversation information
 - `/quit` - Exit application
+
+## Adding Your Own Documents
+
+To add your own documents for indexing and search, simply place them into the `data/` directory. The system supports a variety of formats including PDF, DOCX, TXT, MD, HTML, PPTX, and XLSX.
+
+Upon starting the application (`python main.py` or `python demo_enhanced.py`), the system will automatically:
+
+1.  **Detect New Documents**: It scans the `data/` directory for any new or modified files.
+2.  **Process Documents**: Each detected document is processed through the ingestion pipeline, which includes:
+    *   Text extraction (with OCR for scanned PDFs).
+    *   Advanced text preprocessing (e.g., header/footer removal, normalization).
+    *   Chunking into smaller, manageable pieces.
+    *   Generation of semantic embeddings.
+3.  **Index Documents**: The processed chunks and their embeddings are added to the FAISS vector store in the `index/` directory.
+
+**Important Notes:**
+
+*   **Incremental Indexing**: If you add or modify documents while the application is running, you can use the `/update` command to trigger an incremental re-indexing without rebuilding the entire index.
+*   **Rebuilding Index**: If you wish to force a complete rebuild of the index (e.g., after significant changes to many documents or if you encounter issues), use the `/rebuild` command.
+*   **Supported Formats**: Ensure your documents are in one of the supported formats for proper processing.
 
 ## Project Structure
 
